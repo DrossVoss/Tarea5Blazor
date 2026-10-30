@@ -15,7 +15,6 @@ dotnet tool install --global Microsoft.Web.LibraryManager.Cli
 libman install @microsoft/signalr@8.0.0 -p unpkg -d wwwroot/lib/signalr --files dist/browser/signalr.min.js
 ```
 
-Extraer el ZIP de archivos de la solución sobre esta carpeta (`Tarea5Blazor`), **no sobre la carpeta padre**, conservando los otros archivos del template Blazor.
 
 ```powershell
 dotnet restore
