@@ -1,0 +1,24 @@
+@page "/"
+@inject IJSRuntime JS
+
+<PageTitle>Inicio - Blazor</PageTitle>
+
+<RadzenCard class="tarjeta-tarea">
+    <AuthorizeView>
+        <Authorized Context="usuario">
+            <h1>¡Verificación completada!</h1>
+            <p>Bienvenido/a, <strong>@usuario.User.Identity?.Name</strong>.</p>
+            <p>El evento llegó por SignalR y el servidor inició la sesión.</p>
+            <RadzenButton Text="Cerrar sesión" Click="@Salir" />
+        </Authorized>
+        <NotAuthorized>
+            <h1>Tarea de Blazor y SignalR</h1>
+            <p>Para probar la aplicación, comenzá por el registro.</p>
+            <a href="/registro">Ir al registro</a>
+        </NotAuthorized>
+    </AuthorizeView>
+</RadzenCard>
+
+@code {
+    private async Task Salir() => await JS.InvokeVoidAsync("tarea5.salir");
+}

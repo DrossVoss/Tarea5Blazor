@@ -1,0 +1,7 @@
+.tarjeta-tarea {
+    max-width: 660px;
+    margin: 3rem auto;
+    padding: 1.5rem;
+}
+.tarjeta-tarea h1 { font-size: 1.65rem; }
+.tarjeta-tarea a { overflow-wrap: anywhere; }

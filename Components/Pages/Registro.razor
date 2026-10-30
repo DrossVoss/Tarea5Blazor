@@ -1,0 +1,48 @@
+@page "/registro"
+@inject IJSRuntime JS
+@inject NavigationManager Navegacion
+
+<PageTitle>Registro - Blazor</PageTitle>
+
+<RadzenCard class="tarjeta-tarea">
+    <RadzenStack Gap="1rem">
+        <h1>Registro con Blazor</h1>
+        <p>Ingresá tus datos para simular una verificación de correo.</p>
+        <RadzenLabel Text="Nombre" />
+        <RadzenTextBox @bind-Value="nombre" Placeholder="Tu nombre" Style="width:100%" />
+        <RadzenLabel Text="Correo electrónico" />
+        <RadzenTextBox @bind-Value="email" Placeholder="correo@ejemplo.com" Style="width:100%" />
+        <RadzenButton Text="Registrarme" Click="@Registrar" Disabled="@procesando" />
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <p class="text-danger" role="alert">@error</p>
+        }
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private string nombre = "";
+    private string email = "";
+    private string error = "";
+    private bool procesando;
+
+    private async Task Registrar()
+    {
+        if (procesando) return;
+        procesando = true;
+        error = "";
+        try
+        {
+            var id = await JS.InvokeAsync<string>("tarea5.crear", nombre, email);
+            Navegacion.NavigateTo($"/espera/{id}", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            error = $"No se pudo registrar: {ex.Message}";
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+}

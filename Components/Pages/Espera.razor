@@ -1,0 +1,78 @@
+@page "/espera/{Id}"
+@implements IAsyncDisposable
+@using Microsoft.JSInterop
+@using Tarea5Blazor.Servicios
+@inject VerificacionStore Store
+@inject IJSRuntime JS
+
+<PageTitle>Esperando verificación - Blazor</PageTitle>
+
+<RadzenCard class="tarjeta-tarea">
+    @if (solicitud is null)
+    {
+        <h1>Solicitud inválida o vencida</h1>
+        <a href="/registro">Crear una nueva</a>
+    }
+    else
+    {
+        <RadzenStack Gap="1rem">
+            <h1>Esperando verificación</h1>
+            <p>Hola, <strong>@solicitud.Nombre</strong> (@solicitud.Email).</p>
+            <p role="status">@estado</p>
+            <p>Este enlace simula el mensaje que normalmente llegaría por correo:</p>
+            <a href="@($"/confirmar?token={solicitud.Token}")"
+               target="_blank" rel="noopener noreferrer">Verificar correo (otra pestaña)</a>
+            <RadzenAlert AlertStyle="AlertStyle.Info">
+                No cierres esta pestaña. SignalR actualizará la página automáticamente.
+            </RadzenAlert>
+        </RadzenStack>
+    }
+</RadzenCard>
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+    private Solicitud? solicitud;
+    private string estado = "Conectando con SignalR...";
+    private DotNetObjectReference<Espera>? referencia;
+
+    protected override void OnParametersSet() => solicitud = Store.Buscar(Id);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || solicitud is null) return;
+        referencia = DotNetObjectReference.Create(this);
+        try
+        {
+            await JS.InvokeVoidAsync("tarea5.escuchar", Id, referencia);
+            estado = "Conectado. Abrí el enlace de verificación.";
+        }
+        catch (Exception ex)
+        {
+            estado = $"Error de conexión: {ex.Message}";
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable("Confirmado")]
+    public Task Confirmado() => InvokeAsync(async () =>
+    {
+        estado = "Verificación recibida. Iniciando sesión...";
+        StateHasChanged();
+        try
+        {
+            await JS.InvokeVoidAsync("tarea5.finalizar", Id);
+        }
+        catch (Exception ex)
+        {
+            estado = $"Error al finalizar: {ex.Message}";
+            StateHasChanged();
+        }
+    });
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await JS.InvokeVoidAsync("tarea5.desconectar"); }
+        catch (JSDisconnectedException) { }
+        referencia?.Dispose();
+    }
+}
